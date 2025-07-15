@@ -1,0 +1,529 @@
+---
+title: "Review of Data Analysis Methods"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+  pdf_document:
+    toc: true
+    toc_depth: 3
+
+---
+
+# Descriptive and Inferential Statistics
+
+Welcome to your second class! Congratulations, you've made it! The goal of this lesson is to introduce and re-introduce the common tools used in first understanding the type of data that you have and it's relationships - i.e., statistics. Understanding your data collection process and the data as a result is one of the first steps on the journey of data visualization and storytelling. Through these next two weeks, we will be walking through how to recognize patterns in your data and whether these patterns are substantial enough to investigate further. As data analysis is the process of applying statistical techniques to describe and evaluate data, statistics will play a main role for us.
+
+## Set-up
+
+Let's load the necessary packages for today's class and learn more about the R version we are running.
+
+```{r}
+library(car)
+library(MASS)
+library(rstatix)
+library(datasets)
+
+sessionInfo()  # R version and package version info
+```
+
+
+
+## Types of Data
+
+Before we dive into statistics, let's review the different types of data we can have and the categories they can be broken into:
+
+1. **Categorical/Qualitative Data**: These variables represent groups of data. E.g. race, sex. Has a fixed number of possible values
+  - **Nominal**: label variables without providing any quantitative value (e.g. hair color, nationalities)
+  - **Ordinal**: has a natural ordering or ranking (e.g. education level, income level)
+
+2. **Numeric/Quantitative Data**: Numerical data is data in the form of numbers. These numbers can be a count of objects, number, or any data which uses numbers.
+  - **Discrete**: Use whole numbers
+  - **Continuous**: can have decimals
+  - **Interval**: intervals between values are equal. Does not have a true 0 e.g. Temperature
+  - **Ratio**: Similar to interval but has a true 0, e.g. Height
+
+Understanding what type of data we have can help us decide which methods are best to display our data. It is important to note that the type of data, while it may feel restrictive, can be switched between. We will briefly touch upon these data types here but we will come back to them in future lessons.
+
+What type of data can these common R data types represent?
+  - integer - Numeric, discrete (also Categorical, ordinal)
+  - numeric (double) - Numeric, continuous
+  - logical - Categorical, ordinal
+  - character - Categorical, nominal
+  - factor - Categorical, ordinal
+
+```{r}
+# Use typeof() or class() to check the objects that are part of the list test_objects
+test_objects <- list(c(27, 34.5, 1.2, 100), 
+                     3L,
+                     c(1, 2, 3, 4),
+                     c(1L, 2L, 3L, 4L),
+                     TRUE,
+                     c(TRUE, FALSE, TRUE, FALSE),
+                     c("Hello", "there"),
+                     "python string",
+                     factor(c("early", "middle", "late", "late", "early")))
+
+
+```
+
+
+
+## Types of statistics
+
+There are two main types of statistics that we will be talking about in this lesson today: **Descriptive** and **Inferential**. Descriptive statistics can be thought of as "first pass analysis" were we gather "light" metrics of our data to find patterns. Inferential statistics on the other hand digs deeper to be able to *infer* properties of an underlying distribution and infers properties of a population. First let's play with some descriptive statistics:
+
+
+
+## Descriptive Statistics
+The goal of descriptive statistics is to present data in a summarized and concise way. This can include using indices such as mean, median, range, etc. and can be useful to identify initial patterns and relationships. Lets try and re-familiarize ourselves with some!
+
+
+### `min()` and `max()`
+>These functions take numeric values and returns the `min` or `max` of the set.  
+>**Usage**: `min(...)`, `max(...)` where `...` are values. You can alternatively provide a vector of elements
+
+```{r}
+# Try out the next few functions with the numbers 4.9, 26, 2025, 10.2
+# If you need more information about a function like min, try running ?min
+
+test_vector <- c(4.9, 26, 2025, 10.2)
+
+```
+
+### `mean(x,...)`
+>`mean` is a function to calculate the average of a vector of numeric values and returns it as a numeric value. 
+>**Usage**: `mean(x, ...)`, where `x` is a vector of numeric elements. 
+
+```{r}
+
+```
+
+### `median(x, …)`
+>`median` This function takes a list or concatenation of values and finds the middle number. If there are two numbers in the middle, it finds the average of the two middle numbers.
+One of the benefits of median over mean is that it is robust to outliers in the data. It can also help to check whether your data is skewed or more normal. We will talk about this later on.  
+>**Usage**: `median(x, ...)`, where x is a vector of numeric elements
+
+```{r}
+
+```
+
+Now that we've played with some basic functions, let's import some data to experiment with more detailed descriptive statistics
+
+```{r}
+# Try out the next few functions with various columns in the iris dataset
+
+```
+
+
+### `range(x, na.rm = FALSE)`
+>`range` This function will return the minimum and maximum values of the argument given.
+
+```{r}
+
+```
+
+
+### `quantile(x, probs = seq(0, 1, 0.25), na.rm = FALSE, ...)` 
+>`quantile` This function will return the quantiles at the given probabilities.
+
+```{r}
+
+```
+
+
+### `summary(object, …)` 
+>`summary` is a generic function used to produce result summaries of the results of various model fitting functions. Default values include minimum, first quartile, median, mean, third quartile and max for numeric data or number of occurances for factorial or character data. It can be very useful to gather a lot of information about your data in one function.
+
+```{r}
+
+```
+
+
+###`sd(x, na.rm = FALSE)`
+> `sd` This function computes the standard deviation of the values in `x`. If `na.rm` is `TRUE` then missing values are removed before computation proceeds. This function can be very useful to see the spread of your data around the mean. 
+
+```{r}
+
+```
+
+
+###`var(x, y = NULL, na.rm = FALSE, ...)` 
+> `var` This function computes the variance of the values in `x`. If `na.rm` is `TRUE` then missing values are removed before computation proceeds. This function can be very useful to see the spread of your data around the mean.
+
+```{r}
+
+```
+
+
+## Inferential Statistics
+
+Uses statistical tests to draw conclusions about the data.
+
+Statistical tests are phrased in the form of a **hypothesis**, which determine whether a certain belief can be deemed as true (plausible) or not, based on the data (i.e., the sample(s)).
+
+A null hypothesis will state that there is no significant difference between groups, or there is no significant effect of an explanatory variable on a response variable. The alternative hypothesis will state that there is a significant difference or effect; a prediction typically has directionality (e.g., an explanatory variable has a positive or negative effect on the response variable).
+
+Then, a p-value will test the probability that the null hypothesis will occur. The definition of a p-value is: the probability of observing this data under the assumption that the null hypothesis is true. In other words, it is the probability of an observed difference between groups due to chance. If the p-value is extremely small, then the chance of observing your data due to chance is highly unlikely, so you can conclude that there is a process that is effecting your observed data.
+
+A statistical test aims to **reject the null hypothesis**. If your statistical test results in a p-value of less than the alpha value (typically `0.05` in biological sciences), then you reject the null hypothesis, but if the p-value is greater than alpha, then you **fail to reject the null hypothesis**.
+
+All type of statistical methods that are used to compare the means are called parametric while statistical methods used to compare other than means (e.g. median/ mean ranks/ proportions) are called non-parametric methods. We use non-parametric tests when assumptions are not met. These assumptions typically surround the spread and shape of the data, i.e. they test for normality.
+
+When reporting the results, in most cases, you must include two values: **the test statistic** and **the p-value**. The test statistic is calculated by the statistical test performed, and describes how far your observed data is from the null hypothesis. The p-value calculates the likelihood of the test statistic to tell you how likely it is that your data could have occurred under the null hypothesis.   
+Note that each statistical test uses a different acronym for the test statistic, but the p-value is always called the p-value.
+
+
+### Determining if assumptions are met
+
+Determining whether the distribution of your population of interest is normal can be very complicated. If you have pre-existing knowledge about your data collected, and know if comes from a normally distributed population, then you good to go. However, if you do not have pre-existing knowledge about your data, the steps are more complicated. The larger your sample size is, the less it matters, but how large is large enough? 
+
+For the sake of simplicity for this course, we will use `shapiro.test()` to test for normality, and `leveneTest()` (from the `car` package) to test for homoscedasticity, as well as `plot()` or `hist()` to visually check for shape and outliers.
+
+
+### Correlation coefficients
+
+#### Pearson's correlation coefficient
+
+The Pearson correlation coefficient ($r$) measures linear correlation between two sets of data. The number always falls between -1 to 1. A positive number indicates positive correlation where when one variable changes, the other variable changes in the same direction. A negative number indicates a negative correlation where when one variable changes, the other variable changes in the opposite direction. A more negative or a more positive value means a stronger correlation. A value of $r = 0$ indicates no relationship between the variables.
+
+Generally, in the biological sciences, an $r > 0.3$ or $r < -0.3$ indicates a moderately strong correlation coefficient, and an $r > 0.5$ or $r < -0.5$ is a strong coefficient.
+
+The Pearson correlation coefficient is a good choice when: both variables are continuous (quantitative) and normally distributed, the relationship between the two variables is linear, and there are no outliers.
+
+To perform the Pearson correlation coefficient test, use the function `cor.test()`. Using the dataframe `women`, we are going to test whether `women`'s height (inches) and `women`'s weight (pounds) are correlated. Remember that this is **not** a cause-and-effect relationship.
+
+```{r}
+# Try out the correlation function with the "women" dataset and check if it matches the results described later
+head(women)
+summary(women)
+
+# Are the assumptions of the test met? 
+plot(women$height, women$weight)
+shapiro.test(women$height)
+shapiro.test(women$weight)
+
+# Run cor.test()
+
+```
+
+A p-value less than our threshold for statistical significance, alpha ($0.05$) means that the variables are significantly correlated. In this case there is a significant strong positive relationship, where $p < 0.05$, and $r = 0.995$ (correlation coefficient).  
+
+
+
+#### Spearman rank correlation coefficient
+
+Remember that the Pearson correlation coefficient is for linear correlations. If you want to conduct a correlation test where you suspect there is a correlation between two continuous (quantitative) variables, but values are not increasing/decreasing at a constant rate, or the variables are not normally distributed, use the Spearman rank correlation coefficient ($\rho$, "rho").
+
+This non-parametric test measures the strength and direction of association between two variables based on rank.
+
+```{r}
+# Run cor.test() but for Spearman correlation
+
+```
+
+Here, you would report $\rho = 1$ and $p < 0.05$.
+
+
+
+### T-tests
+
+A t-test determines if there is a significant difference between the means of two groups. T-tests assume a normal distribution, equal variances (spread) between groups (homoscedasticity), and continuous data that is randomly sampled.
+
+
+### Student's t-test
+
+A Student's t-test is the most basic cause-and-effect inferential statistical test that tests whether there is a significant difference between two groups based on some variable.
+
+There are several versions of the t-test for two samples, depending on whether the samples are independent or paired, whether the data are normal, and whether the variances of the populations are (un)equal and/ or (un)known. We will build up these different arguments and statistical tests.
+
+Let's use the `beaver2` dataset to see if there is a difference between beavers that are active `(activ == 1)` versus beavers that are not active `(activ == 0)`. First, let us coerce the `activ` column into a factor.
+
+The basic function is `t.test()`, with the argument `var.equal = TRUE`
+
+```{r}
+beaver2$activ <- as.factor(beaver2$activ)
+
+# Try out the various t-tests using the "temp" and "activ" columns from the "beaver2" dataset and check if it matches the results described later
+
+
+# There are two main ways of calling t.test
+
+```
+
+From this test, we can see that the p-value is extremely small, indicating that there is a significant difference in temperature between the two groups of beavers ($t = -18.4$, $p < 0.05$).
+
+This is a two-sided unpaired t-test, which means that it is non-directional: we are asking whether there is a difference between groups, not specifically whether one group is larger than the other. Two-sided t-tests are the default.
+
+A one-sided t-test will test if one group has a greater or smaller value than another group. However, you will need more statistical power to test one-sided hypotheses, because you need to know not only whether the two groups are different, but also **the direction** (i.e., whether one group is larger or smaller).
+
+Let us compare whether active beavers have a **greater** body temperature than inactive beavers:
+
+```{r}
+# Hint: remember you can use ?t.test to pull up the documentation for t.test
+
+```
+
+From this test, you can see that active beavers have greater temperatures than inactive beavers ($t = 18.367$, $p < 0.05$).
+
+If you switch around the order of the groups, or `alternative = "greater"` to `alternative = "less"`, you may notice that the statistics become reversed.
+
+While running the Student's t-test was only a single line of code, there is actually a lot we should have done before using it. The Student's t-test assumes normally distributed data and homoscedasticity (equal variance). Did our data actually meet those requirements? 
+
+```{r}
+
+
+```
+
+Based on our Shapiro test and Levene test p-values and outputs, we cannot reject the null hypothesis that our data is normal and homoscedastic (i.e.: we can assume the data is normal and homoscedastic).
+
+
+### Welch's t-test
+
+If the two groups are normally distributed but do not have equal variance, then perform a Welch's t-test.
+
+Let's modify our dataset to create unequal variances in temperature between our active and inactive beavers and assume for now that the data is normal.
+
+
+```{r}
+beaver2$temp_mod <- beaver2$temp
+beaver2$temp_mod[beaver2$activ == 0] <- beaver2$temp[beaver2$activ == 0] ^ (8/9)
+```
+
+Let us double check that our variances are now different with `leveneTest()`:
+
+```{r}
+leveneTest(temp_mod ~ activ, data = beaver2)
+```
+
+From the above result, we have enough evidence to reject the null hypothesis, indicating that the variance across the samples is not equal \($W = 15.97$, $p = 0.0001$\). Note that the test statistic uses the symbol $W$. Plotting this (with `plot()`) can help visualize the difference in spread:
+
+```{r}
+hist(beaver2$temp_mod[beaver2$activ == 0])
+hist(beaver2$temp_mod[beaver2$activ == 1])
+```
+
+Let's perform our t-test of unequal variance using the Welch's test with `t.test()`.
+
+```{r}
+t.test(temp_mod ~ activ, data = beaver2, var.equal = FALSE)
+```
+
+From this test, we can see that there is a significant difference in temperature between the two groups of beavers, while taking into consideration the unequal variances ($t = -1152.5$, $p < 0.05$).
+
+
+
+### Mann-Whitney U-test
+
+If your data is not normally distributed, it will be inappropriate to perform a regular t-test. Instead, you will have to use the non-parametric version of the t-test, called the Mann-Whitney U-test (also called the Wilcoxon rank sum test), which uses a ranked order instead of group means.
+
+Let's perform this non-parametric test. Note that the function is called the `wilcox.test()` from base R:
+
+```{r}
+wilcox.test(temp ~ activ, data = beaver2)
+```
+
+From the output, we can see that there is a significant difference in temperatures between active and inactive beavers, without assuming normal distribution ($U = 15$, $p < 0.05$). Note that the test statistic for the Mann-Whitney U-test is commonly called $U$.
+
+
+### Paired t-tests
+
+A paired t-test is used to test whether two paired groups have different means. Usually, paired t-tests test groups before and after treatment, between two sides of the body (e.g., left and right hand, left and right side of the brain), or between matched patients. Outside of patients, paired groups could also involve data from the wear and tear of two pieces of identical materials in different conditions, or two calibration settings of the same machinery. Importantly, these two groups **must not be independent from each other**, in addition to being normally distributed.
+
+We can add the paired argument into our `t.test()` function to test paired samples. Let's use the dataset `anorexia` from the `MASS` package that compares weight of young female patients with anorexia before and after treatment.
+
+```{r}
+# Try out the various paired t-tests using the "Prewt" and "Postwt" columns from the "anorexia" dataset and check if it matches the results described later
+
+# Make sure the paired t-test is appropriate (differences are normally distributed)
+
+```
+
+The mean of the differences in output is group 1 minus group 2. In this example, `Prewt` minus `Postwt` is, on average, -2.76. Since this number is negative, that means `Postwt` (group 2) is larger. And, we can conclude that there is a statistically significant difference between weights before and after treatment ($t = -2.94$, $p = 0.004$).
+
+Note that paired t-tests do not need to assume equal variance -- instead, it assumes that the variances are unknown.
+
+
+### Paired Wilcoxon Signed Rank Test
+
+You can perform non-parametric paired t-tests if the data are not normally distributed. This is called the Wilcoxon Signed Rank Test, and it compares whether two groups are identical without assuming
+that they are normal.
+
+Let's modify our two data columns, confirm that they are both no longer normal, and perform the paired samples Wilcoxon test.
+
+```{r}
+anorexia$Prewt_mod <- anorexia$Prewt^(6)
+anorexia$Postwt_mod <- anorexia$Postwt^(2)
+
+# Check if data is normally distributed
+shapiro.test(anorexia$Prewt_mod - anorexia$Postwt_mod)
+
+# Wilcoxon Signed Rank Test
+wilcox.test(anorexia$Prewt_mod, anorexia$Postwt_mod, paired=TRUE)
+```
+
+From the above Shapiro-Wilk test for normality, we can see that the data are not normally distributed (p-values are less than 0.05).
+
+And, from the paired Wilcoxon test, there is a significant difference between pre- and post-treatment weight of anorexia patients while controlling for the non-normal distribution ($V = 2628$, $p = 0.01$).
+
+Phew, that was a lot of tests just comparing two different groups! Let's move on to compare between more than two groups.
+
+
+### Analysis of Variance (ANOVA)
+
+An analysis of variance (ANOVA for short) tests the difference between three or more groups of data.
+
+The null hypothesis of the ANOVA states that there is no difference in means, and the alternative hypothesis states that at least one mean is different from another mean. Thus, post-hoc tests are required after performing the statistical test in order to deduce which means are different.
+
+ANOVAs have three assumptions: the data in each group is normally distributed, groups have equal variance (homoscedasticity), and that these observations are independent (not paired; i.e., samples in group 1 are not related to group 2).
+
+Let's use the `ChickWeight` dataset to perform our one-way ANOVA (testing one factor). In this dataset, there are 4 different diets in the `Diet` column, numbered 1-4 -- let's test the effect of diet on the weight of chicks.
+
+First, let's check for normality and equal variance.
+
+```{r}
+# Try out the next few tests using "weight" and "Diet" in the "ChickWeight" dataset
+
+```
+
+Let's test whether there is a difference in the weight of the chicks between diets. The function for an ANOVA is `aov()`; then, we wrap the `summary()` function around the ANOVA object:
+
+```{r}
+
+```
+
+From the results, we can see that there is a statistically significant difference in the weights of chicks between diets ($F = 10.81$, $p = 6.43 * 10^{-7}$). Which diets?
+
+Let's perform a Tukey honest significant difference (HSD) test `TukeyHSD()` to compare between pairs. Note that you will not need to perform post-hoc tests if there is no significant difference found between groups in the ANOVA test. This post-hoc test will control for multiple pair-wise comparisons:
+
+```{r}
+
+```
+
+From these pairwise comparisons, we can see that there is a significant difference between group 3 and 1 (where group 3 has a mean of 40 units more than group 1), and group 4 and 1 (where group 4 has a mean of 33 units more than group 1).
+
+
+### Kruskal-Wallis rank sum test
+
+If our ANOVA assumptions are not met, we will need to perform the non-parametric version of the ANOVA, called the Kruskal-Wallis test.
+
+Let's take a look at some diagnostic plots with `plot()`:
+
+```{r}
+plot(chick_aov)  # For the first plot, we are looking for a normal distribution of variables; for the second plot, we are looking for alignment with the dotted line
+```
+
+And also perform our tests of normality (on the residuals) and homoscedasticity:
+
+```{r}
+shapiro.test(chick_aov$residuals)
+leveneTest(weight ~ Diet, data = ChickWeight)
+```
+
+We can see that our data fails both the assumption of normality and the assumption of equal variance (the p-value is less than $0.05$ for both tests). Thus, we need to perform the non-parametric version of the ANOVA, using the function `kruskal.test()` from base R:
+
+```{r}
+kruskal.test(weight ~ Diet, data = ChickWeight)
+```
+
+From the output, we can see that there is a significant difference between at least one diet group ($H = 24.45$, $p = 2.01*10 ^{-5}$), but which one? We need to use the post-hoc test called the Dunn test `dunn_test()` after performing the Kruskal-Wallis test to test pairwise differences while controlling for the multiple comparisons. Let's use the Bonferonni correction for the p-values of the multiple comparisons (a more conservative correction that reduces the false discovery rate) with `p.adjust.method = "bonferroni"`.
+
+
+```{r}
+dunn_test(weight ~ Diet, data = ChickWeight, p.adjust.method = "bonferroni")
+```
+
+From the output, we can see that there is a significant difference between groups 1 and 3 ($p = 0.0003$), and between groups 1 and 4 ($p = 0.0003$).
+
+Note that there are a lot of other corrections options that you can use, but their usage depends on a case-by-case basis. Be careful of p-hacking!
+
+
+### Repeated measures ANOVA
+
+The repeated-measures ANOVA, or within-subjects ANOVA, is used for analyzing data where the same outcome variables are measured at different time points or conditions. The assumptions of a repeated measures ANOVA are: normal distribution of data at each timepoint, and constant variance across timepoints.
+
+
+Let's use the `Orange` dataset as an example, which contains data about the growth (circumference at breast height, mm) of orange trees at different ages. Make sure to test for normality at each timepoint prior to running your ANOVA. The function is `anova_test()`, and to indicate that we are performing a repeated measures test, we have to specify the `wid` argument (for each individual), and the `within` argument (for the within-subjects test variable), in addition to the `dv` (dependent variable).
+
+```{r}
+# Try out the next few tests using  the "Orange" dataset
+head(Orange)
+tail(Orange)
+dim(Orange)
+summary(Orange)
+
+orange_aov <- anova_test(data = Orange, dv = circumference, wid = Tree, within = age)
+get_anova_table(orange_aov)
+```
+
+From the results, we can see that the circumference of the trees was significantly different at the different time points during the data measurements (F = 83.9, $p = 5.06 * 10 ^ {-15}$). The generalized effect size (ges) is 0.86, which indicates the amount of variability due to the within-subjects factor (in our case, age). That means that, on average, there is a difference of 0.86 units in circumference between each of those timepoints.
+
+We can perform multiple pairwise paired t-tests between the levels of the within-subjects factor (here time). P-values are adjusted using the Bonferroni multiple testing correction method. Remember that we have to always control for multiple testing.
+
+
+```{r}
+# pairwise comparisons
+pairwise_t_test(
+  circumference ~ age, paired = TRUE,
+  p.adjust.method = "bonferroni",
+  data = Orange)
+```
+
+From these results, we can see that, on average across all trees, all circumferences were different at all timepoints except for between trees aged 1004 and 1231, and between trees aged 1372 and 1582. So, post-hoc analyses with a Bonferroni adjustment revealed that all the pairwise differences between time points were statistically significantly different (p <= 0.05) except for those two timepoints.
+
+
+### Chi-square test of independence
+
+The Chi-square test is used to analyze a frequency table, or contingency table, formed by two categorical variables. It evaluates whether there is a significant association between the categories of the two variables.
+
+Let's use the `survey` dataset from the `MASS` package to run the chi-square test. Let's test whether smoking is associated with exercise. The null hypothesis states that there is no relationship between smoking and exercise.
+
+```{r}
+# Use the survey dataset for the last few tests
+
+
+```
+
+First, let's create our contingency table, with smoking habit along the rows, and exercise habit along the columns using `table()`:
+
+```{r}
+
+
+```
+
+Now, we can apply the chi-square function `chisq.test()`:
+
+```{r}
+
+
+```
+
+From the output, we can likely conclude that the smoking habit is independent of the exercise level of the student ($\chi ^2 = 5.5$, $p = 0.48$) and hence there is a weak or no correlation between the two variables. However, note the warning message `“Chi-squared approximation may be incorrect”`. In cases where we have relatively small sample numbers, we may want to instead group certain categories together and re-do the test.
+
+```{r}
+
+
+```
+
+Despite grouping, we still receive the warning message `“Chi-squared approximation may be incorrect”`. In cases where we have relatively small sample numbers, where the Chi-square test may not be accurate and is therefore inappropriate to use, we can instead use the Fisher's exact test.
+
+
+### Fisher's exact test
+
+The Fisher's exact test is used to analyze a frequency table, or contingency table, formed by two categorical variables that is small in size. It evaluates whether there is a significant association between the categories of the two variables.
+
+While the Chi-square test gives a p-value approximation that is accurate for larger sample sizes, Fisher's exact test gives exact p-values, as implied by the name and is much more appropriate for smaller datasets. What exactly defines a small dataset? Some statisticians draw the line at fewer than 1000 samples in total, or when more than 20% of cells have fewer than 5 samples expected.
+
+Taking our previous contingency tables from the survey dataset, let us re-investigate our null hypothesis that there is no relationship between smoking and exercise with `fisher.test()`.
+
+```{r}
+
+```
+
+From this output, we can finally conclude that the smoking habit is independent of the exercise level of the student using our newly calculated exact p-value ($p = 0.41$). Please note that the Fisher's exact test does not have a generally recognized test statistic due to how it is calculated. You can instead compare the different proportions of the groups across the dataset.
+
+### 
+
+Woo! That was a lot of statsy fun! Remember that these are just some tools that you may need for your assignments. We will be continuing with more next week. In the meantime, please remember to work on Practice Problem 2 and Worksheet 1.
+
